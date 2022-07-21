@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+
+struct Process
+{
+    int bt, tat, wt, at, ft;//ft is finish time or completion time
+} P[100];
+
+
+
+void scheduler(struct Process P[], int n, int q, int choice)
+{
+    int burst[100], t = 0, done = 0, curr = 0, diff = q, j, i = 0; // q = quantum time , c = choice
+    float tat_sum = 0, wt_sum = 0;
+
+
+    for (i = 0; i < n; i++)
+        burst[i] = P[i].bt;
+
+
+    if (choice == 0)
+        curr = -1;
+
+    while (done < n)
+    {
+        if (choice == 1)
+        {
+            for (j = 0; j < n; j++)
+            {
+                if (P[curr].bt == 0)
+                    curr = j;
+                if (P[j].bt < P[curr].bt && P[j].bt > 0 && P[j].at <= t)
+                    curr = j;
+            }
+            diff = 1;
+        }
+        else
+        {
+            while (1)
+            {
+                curr = (curr + 1) % n;
+                if (P[curr].bt != 0)
+                    break;
+            }
+            diff = (q <= P[curr].bt) ? q : P[curr].bt;
+        }
+        P[curr].bt -= diff;
+        t += diff;
+        if (P[curr].bt == 0)
+        {
+            done++;
+            P[curr].ft = t;
+        }
+    }
+
+
+    if (choice == 1)
+        printf("SRJF Details are \n");
+    else
+        printf("RR Scheduling Details are \n");
+    for (i = 0; i < n; i++)
+    {
+        P[i].bt = burst[i];
+        P[i].tat = P[i].ft - P[i].at;
+        P[i].wt = P[i].tat - P[i].bt;
+        tat_sum += P[i].tat;
+        wt_sum += P[i].wt;
+    }
+
+
+
+    printf("|P|\t|BT|\t|AT|\t|TAT|\t|WT|\n");
+    printf("-------------------------------------\n");
+    for (i = 0; i < n; i++)
+        printf("|%d|\t|%d|\t|%d |\t|%d  |\t|%d |\n", i + 1, P[i].bt, P[i].at, P[i].tat, P[i].wt);
+
+    printf("-------------------------------------\n");
+    printf("Avg TAT = %f\nAvg WT = %f\n", tat_sum / n, wt_sum / n);
+}
+
+
+
+
+void main()
+{
+    int n, q, c, i;
+    printf("Enter the number of processes:\n");
+    scanf("%d", &n);
+    printf("Enter the arrival time and burst time\n");
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\n\tP%d: ", i + 1);
+        scanf("%d%d", &P[i].at, &P[i].bt);
+    }
+    while (1)
+    {
+
+        printf("\n\t1.RR\n\t2.SRJF\n\t3.Exit\n");
+        scanf("%d", &c);
+        switch (c)
+        {
+        case 1:
+            printf("Enter time quantum: ");
+            scanf("%d", &q);
+            scheduler(P, n, q, 0);
+            break;
+        case 2:
+            scheduler(P, n, 1, 1);
+            break;
+        case 3:
+            exit(0);
+        }
+    }
+}
